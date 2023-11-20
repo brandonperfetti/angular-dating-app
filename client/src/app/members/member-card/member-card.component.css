@@ -1,13 +1,14 @@
 .card:hover img {
   transform: scale(1.2, 1.2);
   transition-duration: 500ms;
-  transition: 0.5s ease-in-out;
+  transition-timing-function: ease-out;
   opacity: 0.7;
 }
+
 .card img {
   transform: scale(1, 1);
   transition-duration: 500ms;
-  transition-timing-function: ease-in-out;
+  transition-timing-function: ease-out;
 }
 
 .card-img-wrapper {
@@ -20,19 +21,30 @@
   bottom: -30%;
   left: 0;
   right: 0;
-  margin-left: auto;
   margin-right: auto;
+  margin-left: auto;
   opacity: 0;
 }
+
 .card-img-wrapper:hover .member-icons {
-  opacity: 1;
   bottom: 0;
+  opacity: 1;
 }
 
 .animate {
   transition: all 0.3s ease-in-out;
 }
 
-.gallery {
-  height: 600px;
+@keyframes fa-blink {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+
+.is-online {
+  animation: fa-blink 1.5s linear infinite;
+  color: rgb(1, 189, 42);
 }
