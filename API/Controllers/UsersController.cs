@@ -3,6 +3,7 @@ using API.Data;
 using API.DTOs;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using AutoMapper.Execution;
@@ -31,11 +32,20 @@ namespace API.Controllers
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
+    public async Task<ActionResult<PagedList<MemberDto>>> GetUsers([FromQuery] UserParams userParams)
     {
-      var users = await _userRepository.GetMembersAsync();
+      var currentUser = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
+      userParams.CurrentUsername = currentUser.UserName;
+
+      if (string.IsNullOrEmpty(userParams.Gender))
+
+        userParams.Gender = currentUser.Gender == "male" ? "female" : "male";
+
+      var users = await _userRepository.GetMembersAsync(userParams);
+      Response.AddPaginationHeader(new PaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages));
       return Ok(users);
     }
+
 
     [HttpGet("{username}")] // /api/users/2
     public async Task<ActionResult<MemberDto>> GetUser(string username)
@@ -57,10 +67,7 @@ namespace API.Controllers
     [HttpPost("add-photo")]
     public async Task<ActionResult<PhotoDto>> AddPhoto(IFormFile file)
     {
-      var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-      // TODO: Figure out why this doesn't work
-      // var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
-      var user = await _userRepository.GetUserByUsernameAsync(username);
+      var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
       if (user == null) return NotFound();
       var result = await _photoService.AddPhotoAsync(file);
       if (result.Error != null) return BadRequest(result.Error.Message);
@@ -83,10 +90,7 @@ namespace API.Controllers
     [HttpPut("set-main-photo/{photoId}")]
     public async Task<ActionResult> SetMainPhoto(int photoId)
     {
-      // TODO: Figure out why this doesn't work
-      // var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
-      var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-      var user = await _userRepository.GetUserByUsernameAsync(username);
+      var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
       if (user == null) return NotFound();
       var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
       if (photo == null) return NotFound();
@@ -100,10 +104,7 @@ namespace API.Controllers
     [HttpDelete("delete-photo/{photoId}")]
     public async Task<ActionResult> DeletePhoto(int photoId)
     {
-      // TODO: Figure out why this doesn't work
-      // var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
-      var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-      var user = await _userRepository.GetUserByUsernameAsync(username);
+      var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
       if (user == null) return NotFound();
       var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
       if (photo == null) return NotFound();
