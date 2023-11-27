@@ -1,3 +1,5 @@
+import { Photo } from './photo';
+
 export interface Member {
   id: number;
   userName: string;
@@ -13,10 +15,4 @@ export interface Member {
   city: string;
   country: string;
   photos: Photo[];
-}
-
-export interface Photo {
-  id: number;
-  url: string;
-  isMain: boolean;
 }
